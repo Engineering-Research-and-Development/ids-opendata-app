@@ -18,6 +18,7 @@ import com.google.gson.GsonBuilder;
 
 import de.fraunhofer.iais.eis.ArtifactRequestMessage;
 import de.fraunhofer.iais.eis.Message;
+import it.eng.idsa.dataapp.exception.EmptyFileException;
 import it.eng.idsa.dataapp.exception.ReadFileLockedException;
 import it.eng.idsa.dataapp.service.FileReaderService;
 import it.eng.idsa.dataapp.service.MultiPartMessageService;
@@ -55,13 +56,14 @@ public class IncomingDataAppResourceOverWs implements PropertyChangeListener {
 			String responsePayload = null;
 			try {
 				responsePayload = fileReaderService.readRequestedArtifact(requestMessage, requestedArtifact);
-			} catch (IOException | ReadFileLockedException e) {
-				logger.error("Error while reading resource from disk - crating rejection message", e);
-				Message rejectionMessage = multiPartMessageService.createRejectionMessageLocalIssues(requestMessage);
+			} catch (ReadFileLockedException | EmptyFileException | IOException e) {
+				logger.error("Error while reading resource from disk - creating rejection message", e);
+				Message rejectionMessage = multiPartMessageService.createRejectionCommunicationLocalIssues(requestMessage);
 				MultipartMessage responseMessageRejection = new MultipartMessageBuilder()
-						.withHeaderContent(rejectionMessage).withPayloadContent(null).build();
+						.withHeaderContent(rejectionMessage)
+						.withPayloadContent(null)
+						.build();
 				responseMessageString = MultipartMessageProcessor.multipartMessagetoString(responseMessageRejection, false);
-
 			}
 			String responseMessage = multiPartMessageService.getResponseHeader(requestMessage);
 			// prepare multipart message.

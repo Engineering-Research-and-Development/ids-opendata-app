@@ -26,5 +26,13 @@ public interface MultiPartMessageService {
 	String getResponseHeader(Message header);
 	String getResponseHeader(String header);
 	Message createRejectionMessageLocalIssues(Message header);
+	
+	/**
+	 * Not found reason
+	 * @param header
+	 * @return
+	 */
+	Message createRejectionCommunicationLocalIssues(Message header);
+	
 
 }

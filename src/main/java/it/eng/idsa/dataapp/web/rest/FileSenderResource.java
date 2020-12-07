@@ -39,8 +39,7 @@ import de.fraunhofer.iais.eis.ArtifactResponseMessage;
 import de.fraunhofer.iais.eis.Message;
 import de.fraunhofer.iais.eis.ResponseMessage;
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer;
-import it.eng.idsa.dataapp.service.CKANService;
-import it.eng.idsa.dataapp.service.CSVFileSplitterService;
+import it.eng.idsa.dataapp.service.OpenDataService;
 import it.eng.idsa.dataapp.service.RecreateFileService;
 import it.eng.idsa.dataapp.service.impl.MultiPartMessageServiceImpl;
 import it.eng.idsa.multipart.domain.MultipartMessage;
@@ -66,18 +65,12 @@ public class FileSenderResource {
 	RecreateFileService recreateFileService;
 	
 	@Autowired
-	private CKANService ckanService;
-	
-	@Autowired
-	private CSVFileSplitterService fileSplitter;
+	private OpenDataService opendataService;
 	
 	@Value("${application.dataLakeDirectory.destination}")
 	private Path dataLakeDirectoryDestination;
 	
-	@Value("${application.ckan.splitFile}")
-	private boolean splitFile;
-	
-	@Value("${application.ckan.datetimePattern:YYYYMMdd_HHmmss}")
+	@Value("${application.opendata.ckan.datetimePattern:YYYYMMdd_HHmmss}")
 	private String dateTimePattern;
 	
 	@GetMapping("/hello")
@@ -136,13 +129,9 @@ public class FileSenderResource {
 	public ResponseEntity<String> uploadToCkan(@RequestParam String fileToUpload) throws Exception {
 		logger.info("Endpoint for testing");
 		try {
-			int numberOfFiles = fileSplitter.splitCSV(fileToUpload);
-			for(int i = 1; i< numberOfFiles + 1; i++) {
-				String filePartName = fileSplitter.createFilePartName(fileToUpload, i);
-				logger.info("About to send file {}", filePartName);
-				ckanService.sendFileToCkan(filePartName);
-				logger.info("File {} uploaded to CKAN", filePartName);
-			}
+			logger.info("About to send file {}", fileToUpload);
+			opendataService.uploadData(fileToUpload);
+			logger.info("File {} uploaded to CKAN", fileToUpload);
 		} catch (Exception e) {
 			logger.error("Error while inserting data in CKAN", e);
 			return new ResponseEntity<>("Failed to insert data in CKAN, check logs for more details", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -157,10 +146,10 @@ public class FileSenderResource {
 			@RequestHeader("Forward-To") String forwardTo, @RequestParam String requestedArtifact,
 			@Nullable @RequestBody String payload) throws Exception {
 		URI requestedArtifactURI = URI
-				.create("http://mdm-connector.ids.isst.fraunhofer.de/artifact/" + requestedArtifact);
+				.create("http://w3id.org/engrd/connector/artifact/" + requestedArtifact);
 		Message artifactRequestMessage = new ArtifactRequestMessageBuilder()
 				._issued_(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()))
-				._issuerConnector_(URI.create("http://true.engineering.it/ids/mdm-connector"))._modelVersion_("4.0.0")
+				._issuerConnector_(URI.create("http://w3id.org/engrd/connector"))._modelVersion_("4.0.0")
 				._requestedArtifact_(requestedArtifactURI).build();
 		Serializer serializer = new Serializer();
 		String requestMessage = serializer.serialize(artifactRequestMessage);
@@ -172,21 +161,10 @@ public class FileSenderResource {
 
 		String payloadResponse = null;
 		if(fileNameSaved != null) {
+			String filePartName = dataLakeDirectoryDestination.resolve(fileNameSaved).toString();
+			logger.info("About to send file {}", filePartName);
+			opendataService.uploadData(filePartName);
 			payloadResponse = "{​​\"message\":\"File '" + fileNameSaved + "' uploaded to CKAN successfully\"}";
-			if(splitFile) {
-				int numberOfFiles = fileSplitter.splitCSV(fileNameSaved);
-				for(int i = 1; i< numberOfFiles + 1; i++) {
-					String filePartName = fileSplitter.createFilePartName(fileNameSaved, i);
-					logger.info("About to send file {}", filePartName);
-					ckanService.sendFileToCkan(filePartName);
-					logger.info("File {} uploaded to CKAN", filePartName);
-				}
-			} else {
-				String filePartName = dataLakeDirectoryDestination.resolve(fileNameSaved).toString();
-				logger.info("About to send file {}", filePartName);
-				ckanService.sendFileToCkan(filePartName);
-				logger.info("File {} uploaded to CKAN", filePartName);
-			}
 		} else {
 			payloadResponse = "{​​\"message\":\"File did not uploaded to CKAN\"}";
 		}
@@ -236,7 +214,8 @@ public class FileSenderResource {
 		if (requestMessage instanceof ArtifactRequestMessage && responseMsg instanceof ArtifactResponseMessage) {
 			String payload = MultiPartMessageServiceUtil.getPayload(responseMessage);
 			if(payload != null) {
-				requestedArtifact = ((ArtifactRequestMessage) requestMessage).getRequestedArtifact().getPath().split("/")[2];
+				String reqArtifact = ((ArtifactRequestMessage) requestMessage).getRequestedArtifact().getPath();
+				requestedArtifact = reqArtifact.substring(reqArtifact.lastIndexOf('/') + 1);
 				logger.info("About to save file " + requestedArtifact);
 				String finalFileName = addTimestampToFileName(requestedArtifact);
 				recreateFileService.recreateTheFile(payload, dataLakeDirectoryDestination.resolve(finalFileName).toFile());
