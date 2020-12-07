@@ -35,7 +35,7 @@ public class FileReaderServiceImpl implements FileReaderService {
 	@Autowired
 	private FileWritterService filefWritterService;
 
-	@Value("${application.ckan.writeFileLock}")
+	@Value("${application.opendata.ckan.writeFileLock}")
 	private String writeLockFile;
 	
 	@Value("${application.dataLakeDirectory}")

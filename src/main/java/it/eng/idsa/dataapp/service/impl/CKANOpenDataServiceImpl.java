@@ -19,23 +19,25 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import it.eng.idsa.dataapp.service.CKANService;
+import it.eng.idsa.dataapp.service.OpenDataService;
 
 @Service
-public class CKANServiceImpl implements CKANService {
+@ConditionalOnProperty(name = "application.opendata.version", havingValue = "ckan")
+public class CKANOpenDataServiceImpl implements OpenDataService {
 	
-	private static final Logger logger = LogManager.getLogger(CKANService.class);
+	private static final Logger logger = LogManager.getLogger(OpenDataService.class);
 
-	@Value("${application.ckan.url}")
+	@Value("${application.opendata.ckan.url}")
 	private String ckanURL;
 	
-	@Value("${application.ckan.token}")
+	@Value("${application.opendata.ckan.token}")
 	private String token;
 	
-	@Value("${application.ckan.packageId}")
+	@Value("${application.opendata.ckan.packageId}")
 	private String packageId;
 	
 	@Value("${application.dataLakeDirectory.destination}")

@@ -34,19 +34,19 @@ public class FileWritterServiceImpl implements FileWritterService {
 	
 	public static final String READ_LOCK_FILE = "read.lock";
 
-	@Value("${application.ckan.writeFileLock}")
+	@Value("${application.opendata.ckan.writeFileLock}")
 	private String writeLockFile;
 
 	@Value("${application.dataLakeDirectory}")
 	private Path dataLakeDirectory;
 
-	@Value("${application.ckan.sourceFile}")
+	@Value("${application.opendata.ckan.sourceFile}")
 	private String sourceFileName;
 
-	@Value("${application.ckan.destinationFile}")
+	@Value("${application.opendata.ckan.destinationFile}")
 	private String destinationFile;
 
-	@Value("${application.ckan.numberOfLinesToWrite}")
+	@Value("${application.opendata.ckan.numberOfLinesToWrite}")
 	private int numberOfLinesToWrite;
 
 	private int startLine = 0;

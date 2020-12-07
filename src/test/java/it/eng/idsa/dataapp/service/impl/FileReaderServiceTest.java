@@ -133,6 +133,11 @@ public class FileReaderServiceTest {
 			logger.info("Deleting write lock file");
 			writeLock.delete();
 		}
+		File testCSV = new File(REQUESTED_ARTIFACT);
+		if (testCSV.isFile()) {
+			logger.info("Deleting {}", REQUESTED_ARTIFACT);
+			testCSV.delete();
+		}
 	}
 	
 	private void createArtifactResponseString() throws IOException {

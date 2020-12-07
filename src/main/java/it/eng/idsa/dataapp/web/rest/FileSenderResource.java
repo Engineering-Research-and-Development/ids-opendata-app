@@ -39,7 +39,7 @@ import de.fraunhofer.iais.eis.ArtifactResponseMessage;
 import de.fraunhofer.iais.eis.Message;
 import de.fraunhofer.iais.eis.ResponseMessage;
 import de.fraunhofer.iais.eis.ids.jsonld.Serializer;
-import it.eng.idsa.dataapp.service.CKANService;
+import it.eng.idsa.dataapp.service.OpenDataService;
 import it.eng.idsa.dataapp.service.CSVFileSplitterService;
 import it.eng.idsa.dataapp.service.RecreateFileService;
 import it.eng.idsa.dataapp.service.impl.MultiPartMessageServiceImpl;
@@ -66,7 +66,7 @@ public class FileSenderResource {
 	RecreateFileService recreateFileService;
 	
 	@Autowired
-	private CKANService ckanService;
+	private OpenDataService ckanService;
 	
 	@Autowired
 	private CSVFileSplitterService fileSplitter;
@@ -74,10 +74,10 @@ public class FileSenderResource {
 	@Value("${application.dataLakeDirectory.destination}")
 	private Path dataLakeDirectoryDestination;
 	
-	@Value("${application.ckan.splitFile}")
+	@Value("${application.opendata.ckan.splitFile}")
 	private boolean splitFile;
 	
-	@Value("${application.ckan.datetimePattern:YYYYMMdd_HHmmss}")
+	@Value("${application.opendata.ckan.datetimePattern:YYYYMMdd_HHmmss}")
 	private String dateTimePattern;
 	
 	@GetMapping("/hello")

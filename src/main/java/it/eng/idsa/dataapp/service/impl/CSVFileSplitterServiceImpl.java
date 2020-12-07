@@ -21,7 +21,7 @@ public class CSVFileSplitterServiceImpl implements CSVFileSplitterService {
 	
 	private static final Logger logger = LogManager.getLogger(CSVFileSplitterService.class);
 
-	@Value("${application.ckan.maxFileSize}")
+	@Value("${application.opendata.ckan.maxFileSize}")
 	private int maxFileSize;
 	
 	@Value("${application.dataLakeDirectory.destination}")

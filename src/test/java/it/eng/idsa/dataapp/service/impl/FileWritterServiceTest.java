@@ -2,11 +2,13 @@ package it.eng.idsa.dataapp.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,6 +33,14 @@ public class FileWritterServiceTest {
 		ReflectionTestUtils.setField(service, "sourceFileName", "source_file.csv");
 		ReflectionTestUtils.setField(service, "destinationFile", "destination.csv");
 		ReflectionTestUtils.setField(service, "numberOfLinesToWrite", 5);
+	}
+	
+	@AfterAll
+	public static void clearLockFiles() {
+		File destinationCSV = new File("src/test/resources/destination.csv");
+		if (destinationCSV.isFile()) {
+			destinationCSV.delete();
+		}
 	}
 	
 	@Test
@@ -103,14 +113,6 @@ public class FileWritterServiceTest {
 		assertEquals(secondColumn, dataLine[1]);
 		assertEquals(thirdColumn, dataLine[2]);
 	}
-	
-	
-	private void verifyHeader(List<String[]> lines) {
-		assertEquals(HEADER_LINE[0], lines.get(0)[0]);
-		assertEquals(HEADER_LINE[1], lines.get(0)[1]);
-		assertEquals(HEADER_LINE[2], lines.get(0)[2]);
-	}
-	
 	
 	@Test
 	public void urlHandling() {
