@@ -19,12 +19,11 @@ public class FilePopulatorJob implements Job {
 	
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		logger.info("Triggered fileWritterService.writeToSourceFile");
+		logger.debug("Triggered fileWritterService.writeToSourceFile");
 		try {
 			fileWritterService.writeToSourceFile();
 		} catch (WriteFileLockedException e) {
 			logger.error("Error while executing trigger for fileWritterService");
 		}
 	}
-
 }

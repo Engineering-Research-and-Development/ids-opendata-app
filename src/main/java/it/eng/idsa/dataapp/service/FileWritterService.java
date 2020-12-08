@@ -10,4 +10,6 @@ public interface FileWritterService {
 	void writeToSourceFile() throws WriteFileLockedException;
 	
 	String getHeaderLine();
+	
+	void resetStartLine();
 }

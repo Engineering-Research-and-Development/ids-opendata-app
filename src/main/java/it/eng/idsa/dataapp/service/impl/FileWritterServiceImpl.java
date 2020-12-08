@@ -18,8 +18,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
@@ -49,6 +47,9 @@ public class FileWritterServiceImpl implements FileWritterService {
 	@Value("${application.opendata.ckan.numberOfLinesToWrite}")
 	private int numberOfLinesToWrite;
 
+	@Value("${application.opendata.ckan.appendToDestinationFile:false}")
+	private boolean appendToDestinationFile;
+	
 	private int startLine = 0;
 
 	private String[] headerRow;
@@ -78,14 +79,8 @@ public class FileWritterServiceImpl implements FileWritterService {
 		Reader reader = Files.newBufferedReader(dataLakeDirectory.resolve(sourceFileName));
 		List<String[]> list = new ArrayList<>();
 		try {
-			CSVParser parser = new CSVParserBuilder()
-					.withSeparator(',')
-					.withIgnoreQuotations(true)
-					.build();
-
 			CSVReader csvReader = new CSVReaderBuilder(reader)
 					.withSkipLines(startLine)
-					.withCSVParser(parser)
 					.build();
 
 			int readLine = 0;
@@ -114,17 +109,18 @@ public class FileWritterServiceImpl implements FileWritterService {
 	 * If file size is 0 - write header first
 	 * @param stringArray
 	 * @param path
+	 * @param clearFile should empty file or not
 	 * @throws Exception
 	 */
 	private void csvWriterAll(List<String[]> stringArray, Path path) throws Exception {
 		CSVWriter writer = new CSVWriter(
-				new FileWriter(path.toString(), true), 
+				new FileWriter(path.toString(), appendToDestinationFile), 
 				CSVWriter.DEFAULT_SEPARATOR, 
 				CSVWriter.NO_QUOTE_CHARACTER, 
 				CSVWriter.DEFAULT_ESCAPE_CHARACTER, 
 				CSVWriter.DEFAULT_LINE_END);
 		if(path.toFile().length() == 0) {
-			logger.info("Destination file is 0 sized, inserting header row first");
+			logger.debug("Destination file is 0 sized, inserting header row first");
 			writer.writeNext(headerRow);
 		}
 		writer.writeAll(stringArray);
@@ -164,5 +160,10 @@ public class FileWritterServiceImpl implements FileWritterService {
 	@Override
 	public String getHeaderLine() {
 		return String.join(",", headerRow);
+	}
+
+	@Override
+	public void resetStartLine() {
+		this.startLine = 0;
 	}
 }
