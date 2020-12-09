@@ -157,11 +157,13 @@ public class FileSenderResource {
 			@RequestHeader("Forward-To") String forwardTo, @RequestParam String requestedArtifact,
 			@Nullable @RequestBody String payload) throws Exception {
 		URI requestedArtifactURI = URI
-				.create("http://mdm-connector.ids.isst.fraunhofer.de/artifact/" + requestedArtifact);
+				.create("http://w3id.org/engrd/connector/artifact/" + requestedArtifact);
 		Message artifactRequestMessage = new ArtifactRequestMessageBuilder()
 				._issued_(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()))
-				._issuerConnector_(URI.create("http://true.engineering.it/ids/mdm-connector"))._modelVersion_("4.0.0")
-				._requestedArtifact_(requestedArtifactURI).build();
+				._issuerConnector_(URI.create("http://w3id.org/engrd/connector"))
+				._modelVersion_("4.0.0")
+				._requestedArtifact_(requestedArtifactURI)
+				.build();
 		Serializer serializer = new Serializer();
 		String requestMessage = serializer.serialize(artifactRequestMessage);
 		FileRecreatorBeanExecutor.getInstance().setForwardTo(forwardTo);
@@ -236,7 +238,9 @@ public class FileSenderResource {
 		if (requestMessage instanceof ArtifactRequestMessage && responseMsg instanceof ArtifactResponseMessage) {
 			String payload = MultiPartMessageServiceUtil.getPayload(responseMessage);
 			if(payload != null) {
-				requestedArtifact = ((ArtifactRequestMessage) requestMessage).getRequestedArtifact().getPath().split("/")[2];
+				// get resource from URI http://w3id.org/engrd/connector/artifact/ + requestedArtifact
+				String reqArtifact = ((ArtifactRequestMessage) requestMessage).getRequestedArtifact().getPath();
+				requestedArtifact = reqArtifact.substring(reqArtifact.lastIndexOf('/') + 1);
 				logger.info("About to save file " + requestedArtifact);
 				String finalFileName = addTimestampToFileName(requestedArtifact);
 				recreateFileService.recreateTheFile(payload, dataLakeDirectoryDestination.resolve(finalFileName).toFile());
