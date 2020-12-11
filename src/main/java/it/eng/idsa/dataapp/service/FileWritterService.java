@@ -1,5 +1,7 @@
 package it.eng.idsa.dataapp.service;
 
+import java.io.IOException;
+
 import it.eng.idsa.dataapp.exception.WriteFileLockedException;
 
 public interface FileWritterService {
@@ -9,7 +11,7 @@ public interface FileWritterService {
 	 */
 	void writeToSourceFile() throws WriteFileLockedException;
 	
-	String getHeaderLine();
+	String getHeaderLine() throws IOException;
 	
 	void resetStartLine();
 }

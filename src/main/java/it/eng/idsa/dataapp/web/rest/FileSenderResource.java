@@ -174,7 +174,6 @@ public class FileSenderResource {
 
 		String payloadResponse = null;
 		if(fileNameSaved != null) {
-			payloadResponse = "{​​\"message\":\"File '" + fileNameSaved + "' uploaded to CKAN successfully\"}";
 			if(splitFile) {
 				int numberOfFiles = fileSplitter.splitCSV(fileNameSaved);
 				for(int i = 1; i< numberOfFiles + 1; i++) {
@@ -186,8 +185,14 @@ public class FileSenderResource {
 			} else {
 				String filePartName = dataLakeDirectoryDestination.resolve(fileNameSaved).toString();
 				logger.info("About to send file {}", filePartName);
-				ckanService.sendFileToCkan(filePartName);
-				logger.info("File {} uploaded to CKAN", filePartName);
+				if(countLines(filePartName) > 1) {
+					ckanService.sendFileToCkan(filePartName);
+					logger.info("File {} uploaded to CKAN", filePartName);
+					payloadResponse = "{​​\"message\":\"File '" + fileNameSaved + "' uploaded to CKAN successfully\"}";
+				} else {
+					logger.info("Only header present - did NOT upload fiel to CKAN");
+					payloadResponse = "{​​\"message\":\"File did not uploaded to CKAN - only header and no data.\"}";
+				}
 			}
 		} else {
 			payloadResponse = "{​​\"message\":\"File did not uploaded to CKAN\"}";
@@ -267,4 +272,24 @@ public class FileSenderResource {
 		return finalFileName;
 	}
 
+	private int countLines(String fileName) throws IOException {
+		InputStream is = java.nio.file.Files.newInputStream(dataLakeDirectoryDestination.resolve(fileName));
+		try {
+			byte[] c = new byte[1024];
+			int count = 0;
+			int readChars = 0;
+			boolean empty = true;
+			while ((readChars = is.read(c)) != -1) {
+				empty = false;
+				for (int i = 0; i < readChars; ++i) {
+					if (c[i] == '\n') {
+						++count;
+					}
+				}
+			}
+			return (count == 0 && !empty) ? 1 : count;
+		} finally {
+			is.close();
+		}
+	}
 }

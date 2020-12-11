@@ -158,7 +158,25 @@ public class FileWritterServiceImpl implements FileWritterService {
 	}
 
 	@Override
-	public String getHeaderLine() {
+	public String getHeaderLine() throws IOException {
+		if(headerRow == null) {
+			// read header row from file
+			logger.info("Scheduler not started - reading header line from source file");
+			Reader reader = null;
+			try {
+				reader = Files.newBufferedReader(dataLakeDirectory.resolve(sourceFileName));
+				CSVReader csvReader = new CSVReaderBuilder(reader)
+						.withSkipLines(startLine)
+						.build();
+				headerRow = csvReader.readNext();
+			} catch (IOException e) {
+				logger.error(e);
+			} finally {
+				if(reader != null) {
+					reader.close();
+				}
+			}
+		} 
 		return String.join(",", headerRow);
 	}
 
