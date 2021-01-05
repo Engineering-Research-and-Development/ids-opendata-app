@@ -38,10 +38,10 @@ public String requestArtifact(@RequestHeader("Forward-To-Internal") String forwa
 			@RequestHeader("Forward-To") String forwardTo, @RequestParam String requestedArtifact,
 			@Nullable @RequestBody String payload)
 ```
-That handles incomming requests, creates ArtifactRequestMessage, with requestedArtifact property set to requested artifact query param in following pattern
+That handles incoming requests, creates ArtifactRequestMessage, with requestedArtifact property set to requested artifact query param in following pattern
 
 ```
-"http://mdm-connector.ids.isst.fraunhofer.de/artifact/" + requestedArtifact
+"http://w3id.org/engrd/connector/artifact/" + requestedArtifact
 ```
 
 This URL will be used on Provider data app, to read resource from file system (file name), create ArifactResponseMessage with payload base64 encoded file content, and send response over wss back to Data Consumer.
@@ -51,6 +51,6 @@ In postman, use following configuration:
 
 ![WSS Postman configuration](doc/postman_wss.JPG?raw=true "How to configure postman to wxchange files over wss")
 
-**Forward-To-Internal** - this property will make wss connection on A-endpoint on Sender; we use 8887 port, same like for http communication, since in wss config, it will be disabled.
+**Forward-To-Internal** - this property will make wss connection on A-endpoint on Sender; we use 8887 port, same like for http communication, since in wss configuration, it will be disabled.
 
 **Forward-To** - regular forward to usage - forwarding to receiver ECC, using application.idscp.server.port value
